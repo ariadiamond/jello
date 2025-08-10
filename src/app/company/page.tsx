@@ -7,7 +7,7 @@ export default function CompaniesPage() {
     <div className="">
       <main>
         <h1>Companies</h1>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {companies.map((c) => (
             <div className="p-2 border rounded-sm border-sky-600" key={c.id}>
               <h4>{c.name}</h4>
