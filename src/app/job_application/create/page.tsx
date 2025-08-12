@@ -1,32 +1,22 @@
 import { redirect } from 'next/navigation';
 import database from '@/api/database';
-import { Company } from '@/api/Models';
+import { Company, Status } from '@/api/Models';
 import Select from '@/app/components/Select';
 import TextInput from '@/app/components/TextInput';
-
-const STATUS_OPTIONS = [
-  { id: 'ap', label: 'Applied' },
-  { id: 'i1', label: 'Interview with Recruiter' },
-  { id: 'i2', label: 'Coding Interview' },
-  { id: 'i3', label: 'System Design Interview' },
-  { id: 'i4', label: 'Final Interview' },
-  { id: 'wa', label: 'Waiting for a response' },
-  { id: 'of', label: 'Offer given' },
-  { id: 're', label: 'Rejected' }
-];
 
 export default function CreateCompany() {
   const onSubmit = async (formState) => {
     'use server';
-    const statement = database.prepare('INSERT INTO job_applications(title, company_id, status) VALUES (?, ?, ?, ?) RETURNING ID');
+    const statement = database.prepare('INSERT INTO job_applications(title, company_id, status, applied_on) VALUES (?, ?, ?, ?) RETURNING ID');
     const{ id } = statement.get(
       formState.get('title'),
       formState.get('company_id'),
-      formState.get('status')
+      formState.get('status'),
+      formState.get('applied_on')
     );
-    redirect(`/job_appliction/${id}`);
+    redirect(`/job_application/${id}`);
   }
-  
+
   const companies = Company().select(['id', 'name']).toSql().all();
 
   return (
@@ -36,7 +26,8 @@ export default function CreateCompany() {
         <form action={onSubmit} className="flex justify-around flex-col items-center">
           <TextInput type="text" formKey="title" label="Role" />
           <Select label="Company" formKey="company_id" options={companies.map((c) => ({ id: c.id, label: c.name }))} />
-          <Select label="Status" formKey="status" options={STATUS_OPTIONS} />
+          <Select label="Status" formKey="status" options={Status.options} />
+          <TextInput type="datetime-local" formKey="applied_on" label="Application Submitted At:" />
           <button type="submit">Create!</button>
         </form>
       </main>

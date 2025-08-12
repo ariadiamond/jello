@@ -1,7 +1,7 @@
 import { useId } from 'react';
 
 export default function TextInput(props: { formKey: string; label: string; type: 'url' | 'text'; }) {
-  const { formKey, label, type } = props;
+  const { formKey, label, nullable = false, type } = props;
   const id = useId();
   return (
     <div>
@@ -9,7 +9,7 @@ export default function TextInput(props: { formKey: string; label: string; type:
         {label}
       </label>
       <br />
-      <input id={id} required name={formKey} type={type} />
+      <input id={id} required={!nullable} name={formKey} type={type} />
     </div>
   );
 }

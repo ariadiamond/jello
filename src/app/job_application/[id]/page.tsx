@@ -1,0 +1,53 @@
+import Link from 'next/link';
+import { use } from 'react';
+import database from '@/api/database';
+import { JobApplication, Company, Status } from '@/api/Models';
+import Select from '@/app/components/Select';
+import TextInput from '@/app/components/TextInput';
+
+function StatusUpdate(props) {
+  const { id } = props;
+  async function onUpdateStatus(formState) {
+    'use server'
+    const newStatus = formState.get('new_status');
+    if (!Select.options.includes(newStatus)) {
+      throw new Error(`Unkown Status update: ${newStatus} is not known`);
+    }
+    database.prepare('UPDATE job_applications SET status = \'?\' WHERE id = ?').run(newStatus, id);
+    database.prepare('INSERT INTO job_application_status_updates(job_application_id, status, created_at, notes) VALUES (?, ?, ?, ?)').run(
+      id,
+      newStatus,
+      formState.get('created_at'),
+      formState.get('notes')
+    );
+  }
+
+  return (
+    <section>
+      <form onSubmit={onUpdateStatus}>
+        <Select formKey="new_status" options={Status.options} label="New Status" />
+        <TextInput formKey="created_at" type="datetime-local" label="Update Received At" />
+        <TextInput formKey="notes" type="textarea" label="Notes" nullable />
+        <button type="submit">Update Status</button>
+      </form>
+    </section>
+  );
+}
+
+export default function CompaniesPage({ params }) {
+  const { id } = use(params);
+  const jobApplication = JobApplication().where({ left: 'id', operator: '=', right: id }).toSql().get();
+  const company = Company().where({ left: 'id', operator: '=', right: jobApplication.company_id.toString() }).toSql().get();
+
+  return (
+    <div className="">
+      <main>
+        <h1>{jobApplication.title}</h1>
+        <Link prefetch={false} href={`/company/${company.id}`}>{company.name} Page</Link>
+        <h3>Status: {jobApplication.status}</h3>
+        
+        <StatusUpdate id={id} />
+      </main>
+    </div>
+  );
+}

@@ -10,11 +10,11 @@ export default function JobApplications() {
       <main>
         <h1>Job Applications</h1>
         <Link prefetch={false} href="/job_application/create">Create</Link>
-        {jobs.map((j) => {
+        {jobs.map((j) => (
           <Fragment key={j.id}>
             <span>{JSON.stringify(j)}</span>
           </Fragment>
-        })}
+        ))}
       </main>
     </div>
   );
