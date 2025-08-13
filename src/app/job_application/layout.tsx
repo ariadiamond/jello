@@ -1,6 +1,7 @@
 import Link from 'next/link';
+import type { PropsWithChildren } from 'react';
 
-export default function JobApplicationLayout({ children }) {
+export default function JobApplicationLayout({ children }: PropsWithChildren) {
   return (
     <>
       <nav>

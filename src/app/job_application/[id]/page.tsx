@@ -4,9 +4,9 @@ import { JobApplication, JobApplicationStatusUpdate, Company, STATUSES } from '@
 import Select from '@/app/components/Select';
 import TextInput from '@/app/components/TextInput';
 
-function StatusUpdate(props) {
+function StatusUpdate(props: { id: number }) {
   const { id } = props;
-  async function onUpdateStatus(formState) {
+  async function onUpdateStatus(formState: FormData) {
     'use server';
     const newStatus = formState.get('new_status');
     if (!STATUSES.map((s) => s.id).includes(newStatus)) {
@@ -36,8 +36,13 @@ function StatusUpdate(props) {
   );
 }
 
-export default function CompaniesPage({ params }) {
-  const id = parseInt(use(params).id, 10);
+type JobApplicationPage_t = {
+  params: Promise<{ id: string}>
+};
+
+export default function JobApplicationPage({ params }) {
+  const awaitedParams = use(params);
+  const id = parseInt(awaitedParams.id, 10);
   const jobApplication = JobApplication().where({ left: 'id', operator: '=', right: id }).toSql().get();
   const company = Company().where({ left: 'id', operator: '=', right: jobApplication.company_id }).toSql().get();
 

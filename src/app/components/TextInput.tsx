@@ -1,6 +1,13 @@
 import { useId } from 'react';
 
-export default function TextInput(props: { formKey: string; label: string; type: 'url' | 'text'; }) {
+type Input_t = {
+  formKey: string;
+  label: string;
+  type: string;
+  nullable?: boolean;
+};
+
+export default function TextInput(props: Input_t) {
   const { formKey, label, nullable = false, type } = props;
   const id = useId();
   return (

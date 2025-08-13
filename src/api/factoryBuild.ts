@@ -1,11 +1,11 @@
-import * as S from 'sury';
+import * as z from 'zod';
 import database from './database';
 
-const BaseSchemaValue = S.schema({ type: S.string, id: S.number });
-type BaseSchema = S.Output<typeof BaseSchemaValue> & { fields: { [key: string]: any } };
+const BaseSchemaValue = z.looseObject({ type: z.string(), id: z.number() });
+type BaseSchema = z.infer<typeof BaseSchemaValue>;
 
-const UnaryOperators_st = S.union(['IS NULL', 'IS NOT NULL']);
-const BinaryOperators_st = S.union(['=', '!=', '<>', '>', '<', '>=', '<=', 'LIKE', 'ILIKE']);
+const UnaryOperators_zt = z.enum(['IS NULL', 'IS NOT NULL']);
+const BinaryOperators_zt = z.enum(['=', '!=', '<>', '>', '<', '>=', '<=', 'LIKE', 'ILIKE']);
 
 type Model<T extends BaseSchema> = {
   type: T;
@@ -14,7 +14,7 @@ type Model<T extends BaseSchema> = {
     baseTable: string;
     where: {
       left: string | number;
-      operator: S.Output<typeof UnaryOperators_st> | S.Output<typeof BinaryOperators_st>;
+      operator: z.infer<typeof UnaryOperators_zt> | z.infer<typeof BinaryOperators_zt>;
       right?: string | number;
     }[];
     limit: number | null;
@@ -31,7 +31,7 @@ type Model<T extends BaseSchema> = {
 const escapeString = (str: string): string => `'${str.replace(/[^a-z0-9_]/ig, '')}'`;
 
 function parseSelect<T extends BaseSchema>(model: Model<T>) {
-  const schemaKeys = Object.keys(model.type.fields); // NOTE: this is undocumented!
+  const schemaKeys = Object.keys(model.type.keyof().enum);
   const parsed = model.data.select.map((s) => {
     const re = new RegExp(`^${s}$`, 'i');
     const columnName = schemaKeys.find((sk) => re.test(sk));
@@ -59,7 +59,7 @@ function parseExprOrLiteral<T extends BaseSchema>(model: Model<T>, value: any): 
   }
 
   const re = new RegExp(`^${value}$`, 'i');
-  const schemaKeys = Object.keys(model.type.fields);
+  const schemaKeys = Object.keys(model.type.keyof().enum);
   const col = schemaKeys.find((sk) => re.test(sk));
   if (col) {
     return `${model.data.baseTable}.${col}`;
@@ -68,18 +68,14 @@ function parseExprOrLiteral<T extends BaseSchema>(model: Model<T>, value: any): 
 }
 
 function parseOperator(operator: any): Model<any>['data']['where'][number]['operator'] | never {
-    return S.parseOrThrow(
-      operator,
-      S.union([BinaryOperators_st, UnaryOperators_st])
-    );
+  return z.union([BinaryOperators_zt, UnaryOperators_zt]).parse(operator);
 }
 
 function parseWhere<T extends BaseSchema>(model: Model<T>) {
   const whereClauses = model.data.where.map((clause) => {
     const left = parseExprOrLiteral(model, clause.left);
     const operator = parseOperator(clause.operator);
-    // @ts-ignore NOTE: this is not documented. Make sure Sury updates don't break this
-    const right = UnaryOperators_st.anyOf.map((s) => s.const).includes(operator)
+    const right = Object.keys(UnaryOperators_zt.enum).includes(operator)
       ? ''
       : parseExprOrLiteral(model, clause.right);
     return `${left} ${operator} ${right}`.trim();
@@ -104,7 +100,7 @@ function toSql<T extends BaseSchema>(this: Model<T>) {
     ${parseWhere(this)}
     ${parseLimit(this.data.limit)}
   `;
-  console.info(query);
+  console.info('[QUERY]', query);
   return database.prepare(query);
 }
 
@@ -141,14 +137,10 @@ function factoryBuild<T extends BaseSchema>(init: FactoryBuildArg<T>) {
       return toSql.bind(this)();
     },
     create: function(this: Model<T>, params: Partial<Exclude<T, 'id' | 'type'>>) {
-      const schema = params; // TODO: figure out partials S.parseOrThrow(params, this.type);
-      if ('id' in schema || 'type' in schema) {
-        throw new Error('Found id and/or type in query. Did you mean to do an update?');
-      }
+      const schema = this.type.omit({ id: true, type: true }).parse(params);
 
       const keysToCreate = Object.keys(schema)
-        .filter((key) => !['id', 'type'].includes(key))
-        .filter((key) => schema[key] != undefined);
+        .filter((key) => schema[key]);
       if (keysToCreate.length === 0) {
         throw new Error('No attributes where passed!');
       }
@@ -161,20 +153,17 @@ function factoryBuild<T extends BaseSchema>(init: FactoryBuildArg<T>) {
       return database.prepare(query).get();
     },
     update: function(this: Model<T>, params: Partial<T> & { id: T['id'] }) {
-      const schema = params; // TODO: figure out partials S.parseOrThrow(params, this.type);
-      if (!('id' in schema)) {
-        throw new Error('Missing id in query. Did you mean to create?');
-      }
+      const schema = this.type.partial().extend(this.type.pick({ id: true })).parse(params);
 
-      const keysToCreate = Object.keys(schema)
-        .filter((key) => !['type'].includes(key))
+      const keysToUpdate = Object.keys(schema)
+        .filter((key) => !['type', 'id'].includes(key))
         .filter((key) => schema[key]);
-      if (keysToCreate.length <= 1) {
+      if (keysToUpdate.length <= 1) {
         throw new Error('No attributes where passed!');
       }
       const query = `
         UPDATE ${this.data.baseTable}
-        SET ${keysToCreate.map((key) => `${key} = ${parseExprOrLiteral(this, schema[key])}`).join(', ')}
+        SET ${keysToUpdate.map((key) => `${key} = ${parseExprOrLiteral(this, schema[key])}`).join(', ')}
         WHERE id = ${parseExprOrLiteral(this, schema.id)}
       `;
       console.info('[UPDATE]', query);

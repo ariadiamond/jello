@@ -9,7 +9,7 @@ type SelectProps = {
   }[];
 }
 
-export default function Select(props) {
+export default function Select(props: SelectProps) {
   const { label, formKey, options } = props;
   const id = useId();
 

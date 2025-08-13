@@ -1,7 +1,11 @@
 import { use } from 'react';
 import { JobApplication, Company } from '@/api/Models';
 
-export default function CompaniesPage({ params }) {
+type CompaniesPage_t = {
+  params: Promise<{ id: string }>;
+}
+
+export default function CompaniesPage({ params }: CompaniesPage_t) {
   const parsedParams = use(params);
   const id = parseInt(parsedParams.id, 10);
   const company = Company().where({ left: 'id', operator: '=', right: id }).toSql().get();

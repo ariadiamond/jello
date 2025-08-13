@@ -4,7 +4,7 @@ import Select from '@/app/components/Select';
 import TextInput from '@/app/components/TextInput';
 
 export default function CreateJobApplication() {
-  const onSubmit = async (formState) => {
+  const onSubmit = async (formState: FormData) => {
     'use server';
     const { id } = JobApplication().create({
       title: formState.get('title'),

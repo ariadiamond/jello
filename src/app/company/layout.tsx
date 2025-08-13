@@ -1,6 +1,7 @@
 import Link from 'next/link';
+import type { PropsWithChildren } from 'react';
 
-export default function CompanyLayout({ children }) {
+export default function CompanyLayout({ children }: PropsWithChildren) {
   return (
     <>
       <nav>

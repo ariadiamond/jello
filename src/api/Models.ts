@@ -1,9 +1,9 @@
 import factoryBuild from './factoryBuild';
-import { Statuses_t, SuryTypes } from './types';
+import { Statuses_t, ZodTypes } from './types';
 
-export const Company = () => factoryBuild({ type: SuryTypes.Company_st, baseTable: 'companies' });
-export const JobApplication = () => factoryBuild({ type: SuryTypes.JobApplication_st, baseTable: 'job_applications' });
-export const JobApplicationStatusUpdate = () => factoryBuild({ type: SuryTypes.JobApplicationStatusUpdate_st, baseTable: 'job_application_status_junctions' });
+export const Company = () => factoryBuild({ type: ZodTypes.Company_zt, baseTable: 'companies' });
+export const JobApplication = () => factoryBuild({ type: ZodTypes.JobApplication_zt, baseTable: 'job_applications' });
+export const JobApplicationStatusUpdate = () => factoryBuild({ type: ZodTypes.JobApplicationStatusUpdate_zt, baseTable: 'job_application_status_junctions' });
 
 export const STATUSES: { id: Statuses_t; label: string; }[] = [
   { id: 'ap', label: 'Applied' },

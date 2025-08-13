@@ -3,7 +3,7 @@ import { Company } from '@/api/Models';
 import TextInput from '@/app/components/TextInput';
 
 export default function CreateCompany() {
-  const onSubmit = async (formState) => {
+  const onSubmit = async (formState: FormData) => {
     'use server';
     const { id } = Company().create({
       name: formState.get('name'),
