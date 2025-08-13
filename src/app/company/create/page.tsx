@@ -1,13 +1,14 @@
 import { redirect } from 'next/navigation';
-import database from '@/api/database';
 import { Company } from '@/api/Models';
 import TextInput from '@/app/components/TextInput';
 
 export default function CreateCompany() {
   const onSubmit = async (formState) => {
     'use server';
-    const statement = database.prepare('INSERT INTO companies(name, url) VALUES (?, ?) RETURNING ID');
-    const{ id } = statement.get(formState.get('name'), formState.get('url'));
+    const { id } = Company().create({
+      name: formState.get('name'),
+      url: formState.get('url')
+    });
     redirect(`/company/${id}`);
   }
 

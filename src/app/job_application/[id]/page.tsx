@@ -1,31 +1,33 @@
 import Link from 'next/link';
 import { use } from 'react';
-import database from '@/api/database';
-import { JobApplication, Company, Status } from '@/api/Models';
+import { JobApplication, JobApplicationStatusUpdate, Company, STATUSES } from '@/api/Models';
 import Select from '@/app/components/Select';
 import TextInput from '@/app/components/TextInput';
 
 function StatusUpdate(props) {
   const { id } = props;
   async function onUpdateStatus(formState) {
-    'use server'
+    'use server';
     const newStatus = formState.get('new_status');
-    if (!Select.options.includes(newStatus)) {
+    if (!STATUSES.map((s) => s.id).includes(newStatus)) {
       throw new Error(`Unkown Status update: ${newStatus} is not known`);
     }
-    database.prepare('UPDATE job_applications SET status = \'?\' WHERE id = ?').run(newStatus, id);
-    database.prepare('INSERT INTO job_application_status_updates(job_application_id, status, created_at, notes) VALUES (?, ?, ?, ?)').run(
+    JobApplication().update({
       id,
-      newStatus,
-      formState.get('created_at'),
-      formState.get('notes')
-    );
+      status: newStatus
+    });
+    JobApplicationStatusUpdate().create({
+      job_application_id: id,
+      status: newStatus,
+      created_at: formState.get('created_at'),
+      notes: formState.get('notes'),
+    });
   }
 
   return (
     <section>
-      <form onSubmit={onUpdateStatus}>
-        <Select formKey="new_status" options={Status.options} label="New Status" />
+      <form action={onUpdateStatus}>
+        <Select formKey="new_status" options={STATUSES} label="New Status" />
         <TextInput formKey="created_at" type="datetime-local" label="Update Received At" />
         <TextInput formKey="notes" type="textarea" label="Notes" nullable />
         <button type="submit">Update Status</button>
@@ -35,9 +37,9 @@ function StatusUpdate(props) {
 }
 
 export default function CompaniesPage({ params }) {
-  const { id } = use(params);
+  const id = parseInt(use(params).id, 10);
   const jobApplication = JobApplication().where({ left: 'id', operator: '=', right: id }).toSql().get();
-  const company = Company().where({ left: 'id', operator: '=', right: jobApplication.company_id.toString() }).toSql().get();
+  const company = Company().where({ left: 'id', operator: '=', right: jobApplication.company_id }).toSql().get();
 
   return (
     <div className="">

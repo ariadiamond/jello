@@ -2,7 +2,8 @@ import { use } from 'react';
 import { JobApplication, Company } from '@/api/Models';
 
 export default function CompaniesPage({ params }) {
-  const { id } = use(params);
+  const parsedParams = use(params);
+  const id = parseInt(parsedParams.id, 10);
   const company = Company().where({ left: 'id', operator: '=', right: id }).toSql().get();
   const jobApplications = JobApplication().select(['status']).where({ left: 'company_id', operator: '=', right: id }).toSql().all();
 

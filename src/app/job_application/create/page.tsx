@@ -1,19 +1,17 @@
 import { redirect } from 'next/navigation';
-import database from '@/api/database';
-import { Company, Status } from '@/api/Models';
+import { JobApplication, Company, STATUSES } from '@/api/Models';
 import Select from '@/app/components/Select';
 import TextInput from '@/app/components/TextInput';
 
-export default function CreateCompany() {
+export default function CreateJobApplication() {
   const onSubmit = async (formState) => {
     'use server';
-    const statement = database.prepare('INSERT INTO job_applications(title, company_id, status, applied_on) VALUES (?, ?, ?, ?) RETURNING ID');
-    const{ id } = statement.get(
-      formState.get('title'),
-      formState.get('company_id'),
-      formState.get('status'),
-      formState.get('applied_on')
-    );
+    const { id } = JobApplication().create({
+      title: formState.get('title'),
+      company_id: formState.get('company_id'),
+      status: formState.get('status'),
+      applied_on: formState.get('applied_on'),
+    });
     redirect(`/job_application/${id}`);
   }
 
@@ -26,7 +24,7 @@ export default function CreateCompany() {
         <form action={onSubmit} className="flex justify-around flex-col items-center">
           <TextInput type="text" formKey="title" label="Role" />
           <Select label="Company" formKey="company_id" options={companies.map((c) => ({ id: c.id, label: c.name }))} />
-          <Select label="Status" formKey="status" options={Status.options} />
+          <Select label="Status" formKey="status" options={STATUSES} />
           <TextInput type="datetime-local" formKey="applied_on" label="Application Submitted At:" />
           <button type="submit">Create!</button>
         </form>

@@ -1,10 +1,11 @@
 import factoryBuild from './factoryBuild';
-import { Statuses_t } from './types';
+import { Statuses_t, SuryTypes } from './types';
 
-export const Company = () => factoryBuild({ baseTable: 'companies' });
-export const JobApplication = () => factoryBuild({ baseTable: 'job_applications' });
+export const Company = () => factoryBuild({ type: SuryTypes.Company_st, baseTable: 'companies' });
+export const JobApplication = () => factoryBuild({ type: SuryTypes.JobApplication_st, baseTable: 'job_applications' });
+export const JobApplicationStatusUpdate = () => factoryBuild({ type: SuryTypes.JobApplicationStatusUpdate_st, baseTable: 'job_application_status_junctions' });
 
-const STATUS_OPTIONS: { id: Statuses_t; label: string; }[] = [
+export const STATUSES: { id: Statuses_t; label: string; }[] = [
   { id: 'ap', label: 'Applied' },
   { id: 'i1', label: 'Interview with Recruiter' },
   { id: 'i2', label: 'Coding Interview' },
@@ -14,13 +15,12 @@ const STATUS_OPTIONS: { id: Statuses_t; label: string; }[] = [
   { id: 'of', label: 'Offer given' },
   { id: 're', label: 'Rejected' }
 ];
-export const Status = () => factoryBuild({ baseTable: 'statuses' });
-Status.options = STATUS_OPTIONS;
 
 const Models = {
   Company,
   JobApplication,
-  Status
+  JobApplicationStatusUpdate,
+  STATUSES
 };
 
 export default Models;
