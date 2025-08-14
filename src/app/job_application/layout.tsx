@@ -6,13 +6,17 @@ export default function JobApplicationLayout({ children }: PropsWithChildren) {
     <>
       <nav>
         <Link prefetch={false} href="/">
-          Home
+          /Home
         </Link>
         <Link prefetch={false} href="/job_application/">
-          Job Applications
+          /Job Applications
         </Link>
       </nav>
-      {children}
+      <main>
+        <div>
+          {children}
+        </div>
+      </main>
     </>
   );
 }

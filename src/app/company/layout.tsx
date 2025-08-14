@@ -6,13 +6,17 @@ export default function CompanyLayout({ children }: PropsWithChildren) {
     <>
       <nav>
         <Link prefetch={false} href="/">
-          Home
+          /Home
         </Link>
         <Link prefetch={false} href="/company/">
-          Companies
+          /Companies
         </Link>
       </nav>
-      {children}
+      <main>
+        <div>
+          {children}
+        </div>
+      </main>
     </>
   );
 }

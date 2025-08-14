@@ -1,21 +1,22 @@
+import Link from 'next/link';
 import { Company } from '@/api/Models';
+import CardGroup from '@/app/components/Card';
 
 export default function CompaniesPage() {
   const companies = Company().toSql().all();
 
   return (
-    <div className="">
-      <main>
+    <>
+      <div className="flex justify-between items-center border-b mb-[1em]">
         <h1>Companies</h1>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {companies.map((c) => (
-            <div className="p-2 border rounded-sm border-sky-600" key={c.id}>
-              <h4>{c.name}</h4>
-              <a href={`/company/${c.id}`}>-&gt;</a>
-            </div>
-          ))}
-        </div>
-      </main>
-    </div>
+        <Link prefetch={false} href="/company/create">Create</Link>
+      </div>
+      <CardGroup
+        cards={companies.map((company) => ({
+          header: company.name,
+          link: `/company/${company.id}`
+        }))}
+      />
+    </>
   );
 }

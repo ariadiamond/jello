@@ -28,7 +28,7 @@ type Model<T extends BaseSchema> = {
 };
 
 // TODO: Before going to production + if this scales at all, this needs to be strengthened a lot
-const escapeString = (str: string): string => `'${str.replace(/[^a-z0-9_]/ig, '')}'`;
+const escapeString = (str: string): string => `'${str.replace(/\\/g, '').replace(/'/g, "\'")}'`;
 
 function parseSelect<T extends BaseSchema>(model: Model<T>) {
   const schemaKeys = Object.keys(model.type.keyof().enum);
@@ -153,12 +153,14 @@ function factoryBuild<T extends BaseSchema>(init: FactoryBuildArg<T>) {
       return database.prepare(query).get();
     },
     update: function(this: Model<T>, params: Partial<T> & { id: T['id'] }) {
-      const schema = this.type.partial().extend(this.type.pick({ id: true })).parse(params);
+      const schema = z
+        .intersection(this.type.partial(), this.type.pick({ id: true }))
+        .parse(params);
 
       const keysToUpdate = Object.keys(schema)
         .filter((key) => !['type', 'id'].includes(key))
         .filter((key) => schema[key]);
-      if (keysToUpdate.length <= 1) {
+      if (keysToUpdate.length < 1) {
         throw new Error('No attributes where passed!');
       }
       const query = `

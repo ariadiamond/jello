@@ -13,15 +13,17 @@ export default function CreateCompany() {
   }
 
   return (
-    <div className="">
-      <main>
-        <h1>Create Company</h1>
-        <form action={onSubmit} className="flex h-screen justify-around flex-col items-center">
+    <>
+      <h1>Create Company</h1>
+      <form action={onSubmit}>
+        <div>
           <TextInput type="text" formKey="name" label="Company Name" />
           <TextInput type="url" formKey="url" label="Company Url" />
-          <button type="submit">Create!</button>
-        </form>
-      </main>
-    </div>
+          <div className="flex justify-center">
+            <button type="submit">Create!</button>
+          </div>
+        </div>
+      </form>
+    </>
   );
 }

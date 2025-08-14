@@ -2,12 +2,16 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="">
-      <main>
-        <Link prefetch={false} href="/job_application">Job Applications</Link>
+    <main>
+      <div>
+        <h1>
+          <Link prefetch={false} href="/job_application">Job Applications</Link>
+        </h1>
         <br />
-        <Link prefetch={false} href="/company">Companies</Link>
-      </main>
-    </div>
+        <h1>
+          <Link prefetch={false} href="/company">Companies</Link>
+        </h1>
+      </div>
+    </main>
   );
 }

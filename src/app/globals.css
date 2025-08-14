@@ -3,6 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --border-light: #ABCCDF;
 }
 
 @theme inline {
@@ -14,6 +15,7 @@
   :root {
     --background: #0a0a4a;
     --foreground: #ededed;
+    --border-dark: #ACC7DD;
   }
 }
 
@@ -27,7 +29,69 @@ body {
 
 /* Global Component Styling */
 
+main {
+  padding: 1em 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 input {
   border: 1px solid #6A6A6A;
   border-radius: 2px;
+}
+
+nav {
+  border: 1px solid var(--border-light);
+  width: max-content;
+  border-radius: 4px;
+}
+
+nav a {
+  padding: 0.25em;
+}
+
+form {
+  border: 1px solid var(--border-light);
+  padding: 1em;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+h1 {
+  font-size: 2em;
+}
+h2 {
+  font-size: 1.5em;
+}
+h3 {
+  font-size: 1.1em;
+}
+h4 {
+  font-size: 1em;
+}
+
+button {
+  border: 1px solid var(--border-light);
+  border-radius: 2em;
+  padding: 0.25em 1em;
+  margin: 0.5em;
+}
+
+/* Dark mode */
+@media(prefers-color-scheme:dark) {
+  nav, form, button {
+    border-color: var(--border-dark);
+  }
+}
+
+.status {
+  border: 2px solid black;
+  border-radius: 1em;
+  padding: 0.25em;
+}
+
+.status-re {
+  border-color: #D28080;
 }

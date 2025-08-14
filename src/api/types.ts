@@ -18,7 +18,7 @@ const JobApplication_zt = z.object({
   title: z.string(),
   company_id: z.number(), // ref Company
   status: Statuses_zt, // ref Statuses
-  applied_on: z.iso.datetime(), // TODO: looser parsing using refinements and Date()
+  applied_on: z.iso.datetime({ offset: true }), // TODO: looser parsing using refinements and Date()
   notes: z.string().optional()
 });
 export type JobApplication_t = z.infer<typeof JobApplication_zt>;
@@ -28,7 +28,7 @@ const JobApplicationStatusUpdate_zt = z.object({
   id: z.number(),
   job_application_id: z.number(), // ref JobApplication
   status: Statuses_zt, // ref Statuses
-  created_at: z.iso.datetime(),
+  created_at: z.iso.datetime({ offset: true }),
   notes: z.string().optional()
 });
 export type JobApplicationStatusUpdate_t = z.infer<typeof JobApplicationStatusUpdate_zt>;

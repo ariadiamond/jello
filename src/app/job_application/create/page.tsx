@@ -6,11 +6,14 @@ import TextInput from '@/app/components/TextInput';
 export default function CreateJobApplication() {
   const onSubmit = async (formState: FormData) => {
     'use server';
+    const offset = (new Date()).getTimezoneOffset();
     const { id } = JobApplication().create({
       title: formState.get('title'),
-      company_id: formState.get('company_id'),
+      company_id: parseInt(formState.get('company_id'), 10),
       status: formState.get('status'),
-      applied_on: formState.get('applied_on'),
+      applied_on: `${
+        formState.get('applied_on').toString()
+      }${offset > 0 ? '+' : '-'}${offset < 600 ? '0' : ''}${offset / 60}:00`,
     });
     redirect(`/job_application/${id}`);
   }
@@ -18,17 +21,31 @@ export default function CreateJobApplication() {
   const companies = Company().select(['id', 'name']).toSql().all();
 
   return (
-    <div className="">
-      <main>
-        <h1>Create Job Application</h1>
-        <form action={onSubmit} className="flex justify-around flex-col items-center">
+    <>
+      <h1>Create Job Application</h1>
+      <form action={onSubmit}>
+        <div>
           <TextInput type="text" formKey="title" label="Role" />
-          <Select label="Company" formKey="company_id" options={companies.map((c) => ({ id: c.id, label: c.name }))} />
-          <Select label="Status" formKey="status" options={STATUSES} />
-          <TextInput type="datetime-local" formKey="applied_on" label="Application Submitted At:" />
-          <button type="submit">Create!</button>
-        </form>
-      </main>
-    </div>
+          <Select
+            label="Company"
+            formKey="company_id"
+            options={companies.map((c) => ({ id: c.id, label: c.name }))}
+          />
+          <Select
+            label="Status"
+            formKey="status"
+            options={STATUSES}
+          />
+          <TextInput
+            type="datetime-local"
+            formKey="applied_on"
+            label="Application Submitted At:"
+          />
+          <div className="flex justify-center">
+            <button type="submit">Create!</button>
+          </div>
+        </div>
+      </form>
+    </>
   );
 }

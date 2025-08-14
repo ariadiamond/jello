@@ -8,6 +8,8 @@ function StatusUpdate(props: { id: number }) {
   const { id } = props;
   async function onUpdateStatus(formState: FormData) {
     'use server';
+    const offset = (new Date()).getTimezoneOffset();
+
     const newStatus = formState.get('new_status');
     if (!STATUSES.map((s) => s.id).includes(newStatus)) {
       throw new Error(`Unkown Status update: ${newStatus} is not known`);
@@ -19,7 +21,9 @@ function StatusUpdate(props: { id: number }) {
     JobApplicationStatusUpdate().create({
       job_application_id: id,
       status: newStatus,
-      created_at: formState.get('created_at'),
+      created_at: `${
+        formState.get('created_at').toString()
+      }${offset > 0 ? '+' : '-'}${offset < 600 ? '0' : ''}${offset / 60}:00`,
       notes: formState.get('notes'),
     });
   }
@@ -27,10 +31,14 @@ function StatusUpdate(props: { id: number }) {
   return (
     <section>
       <form action={onUpdateStatus}>
-        <Select formKey="new_status" options={STATUSES} label="New Status" />
-        <TextInput formKey="created_at" type="datetime-local" label="Update Received At" />
-        <TextInput formKey="notes" type="textarea" label="Notes" nullable />
-        <button type="submit">Update Status</button>
+        <div>
+          <Select formKey="new_status" options={STATUSES} label="New Status" />
+          <TextInput formKey="created_at" type="datetime-local" label="Update Received At" />
+          <TextInput formKey="notes" type="textarea" label="Notes" nullable />
+          <div className="flex justify-center">
+            <button type="submit">Update Status</button>
+          </div>
+        </div>
       </form>
     </section>
   );
@@ -47,14 +55,18 @@ export default function JobApplicationPage({ params }) {
   const company = Company().where({ left: 'id', operator: '=', right: jobApplication.company_id }).toSql().get();
 
   return (
-    <div className="">
-      <main>
-        <h1>{jobApplication.title}</h1>
-        <Link prefetch={false} href={`/company/${company.id}`}>{company.name} Page</Link>
-        <h3>Status: {jobApplication.status}</h3>
-        
-        <StatusUpdate id={id} />
-      </main>
-    </div>
+    <>
+      <h1>{jobApplication.title}</h1>
+      <Link prefetch={false} href={`/company/${company.id}`}>{company.name} Page</Link>
+      <div className="flex h-max my-[0.25em]">
+        <h3>
+          Status:&nbsp;
+        </h3>
+        <span className={`text-sm status status-${jobApplication.status}`}>
+          {STATUSES.find((st) => st.id === jobApplication.status)?.label}
+        </span>
+      </div>
+      <StatusUpdate id={id} />
+    </>
   );
 }
