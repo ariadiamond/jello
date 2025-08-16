@@ -1,6 +1,11 @@
 #!/bin/bash
 
-FILE_NAME="job_applications.sqlite3"
+FILE_NAME="$1"
+if [ -z "$FILE_NAME" ]; then
+  FILE_NAME="job_applications.sqlite3"
+fi
+
+echo "Initializing database at $FILE_NAME"
 
 if [ -e "$FILE_NAME" ]; then
   if [ -n "$OVERWRITE_SQL_DATABASE" ]; then
