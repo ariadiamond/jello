@@ -42,7 +42,9 @@ next-env.d.ts
 
 
 # Database (is specific to each individual)
+test_db.sqlite3
 job_applications.sqlite3
+job_applications_dev.sqlite3
 
 # Playwright
 /test-results/

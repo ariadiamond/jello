@@ -64,8 +64,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-     command: 'DATABASE_LOCATION=test_db.sqlite3 npm run dev',
-     url: 'http://localhost:3000',
-     reuseExistingServer: !process.env.CI,
+     command: 'DATABASE_LOCATION=test_db.sqlite3 PORT=4000 npx next dev --turbopack',
+     url: 'http://localhost:4000',
+     reuseExistingServer: false,
   },
 });

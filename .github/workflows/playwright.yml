@@ -21,9 +21,9 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Setup database
-      run: ./setup.sh
+      run: ./setup.sh test_db.sqlite3
     - name: Run Playwright tests
-      run: npx playwright test
+      run: npm run test
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:

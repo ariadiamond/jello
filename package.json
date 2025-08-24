@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
+    "dev": "DATABASE_LOCATION=job_applications_dev.sqlite3 next dev --turbopack",
+    "build": "DATABASE_LOCATION=job_applications.sqlite3 next build",
+    "start": "DATABASE_LOCATION=job_applications.sqlite3 next start",
     "lint": "next lint",
-    "test": "DATABASE_LOCATION=test_db.sqlite3 playwright test"
+    "test": "PORT=4000 DATABASE_LOCATION=test_db.sqlite3 playwright test"
   },
   "dependencies": {
     "next": "15.4.6",

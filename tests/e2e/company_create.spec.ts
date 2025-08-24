@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 import database from '@/api/database';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('http://localhost:3000/company/create');
+  await page.goto(`http://localhost:${process.env.PORT}/company/create`);
 });
 
 test.describe('Create Company', () => {
@@ -25,7 +25,7 @@ test.describe('Create Company', () => {
     await page.getByLabel('Company Name').fill('Company A');
     await page.getByRole('button', { name: 'Create!' }).click();
     
-    await expect(page).toHaveURL('http://localhost:3000/company/create');
+    await expect(page).toHaveURL(`http://localhost:${process.env.PORT}/company/create`);
     await expect(page.getByText('Please fill out this field.')).toBeTruthy();
   });
   test('Can create a company', async ({ page }) => {
@@ -35,7 +35,7 @@ test.describe('Create Company', () => {
     await page.getByRole('button', { name: 'Create!' }).click();
     
     // assertions
-    await expect(page).toHaveURL(/http:\/\/localhost:3000\/company\/[0-9]+/);
+    await expect(page).toHaveURL(/http:\/\/localhost:[0-9]+\/company\/[0-9]+/);
       const record = database.prepare('SELECT name, url FROM companies WHERE id = ?')
                            .get(parseInt(page.url().match(/([0-9]+)$/)?.[1] || '', 10));
 
