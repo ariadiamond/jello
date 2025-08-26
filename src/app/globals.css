@@ -91,7 +91,24 @@ button {
   border-radius: 1em;
   padding: 0.25em;
 }
-
+.status-ap {
+  border-color: #30DF90;
+}
+.status-i1 {
+  border-color: #6090FC;
+}
+.status-i2 {
+  border-color: #AB20FC;
+}
+.status-i3 {
+  border-color: #FB30FC;
+}
+.status-i4 {
+  border-color: #80DDAB;
+}
+.status-wa {
+  border-color: #FC9060;
+}
 .status-re {
-  border-color: #D28080;
+  border-color: #E23080;
 }

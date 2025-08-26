@@ -11,7 +11,7 @@ function Card(props: Card_t) {
   const { card: { header, link, body = null } } = props;
   return (
     <div className="p-2 border rounded-sm border-sky-600">
-      <div className="flex justify-between mb-1 border-b border-solid border-black dark:border-white">
+      <div className={`flex justify-between mb-1 ${body && 'border-b border-solid border-black dark:border-white'}`}>
         <h4 className="truncate" title={header}>{header}</h4>
         <a href={link} className="ml-[0.5em]">↗️</a>
       </div>
