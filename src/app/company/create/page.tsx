@@ -1,16 +1,16 @@
-import { redirect } from 'next/navigation';
-import { Company } from '@/api/Models';
-import TextInput from '@/app/components/TextInput';
+import { redirect } from "next/navigation";
+import { Company } from "@/api/Models";
+import TextInput from "@/app/components/TextInput";
 
 export default function CreateCompany() {
   const onSubmit = async (formState: FormData) => {
-    'use server';
+    "use server";
     const { id } = Company().create({
-      name: formState.get('name'),
-      url: formState.get('url')
+      name: formState.get("name"),
+      url: formState.get("url"),
     });
     redirect(`/company/${id}`);
-  }
+  };
 
   return (
     <>

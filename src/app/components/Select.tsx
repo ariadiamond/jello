@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId } from "react";
 
 type SelectProps = {
   label: string;
@@ -7,7 +7,7 @@ type SelectProps = {
     id: string | number;
     label: string;
   }[];
-}
+};
 
 export default function Select(props: SelectProps) {
   const { label, formKey, options } = props;
@@ -19,7 +19,9 @@ export default function Select(props: SelectProps) {
       <br />
       <select id={id} name={formKey}>
         {options.map((option) => (
-          <option key={option.id} value={option.id}>{option.label}</option>
+          <option key={option.id} value={option.id}>
+            {option.label}
+          </option>
         ))}
       </select>
     </div>
