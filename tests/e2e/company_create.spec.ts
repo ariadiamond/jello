@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import database from '@/api/database';
 
 test.beforeEach(async ({ page }) => {
