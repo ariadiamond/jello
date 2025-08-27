@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "DATABASE_LOCATION=job_applications_dev.sqlite3 next dev --turbopack",
+    "build": "DATABASE_LOCATION=job_applications.sqlite3 next build",
+    "start": "DATABASE_LOCATION=job_applications.sqlite3 next start",
+    "lint": "next lint",
+    "test": "PORT=4000 DATABASE_LOCATION=test_db.sqlite3 playwright test"
   },
   "dependencies": {
     "next": "15.4.6",
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.54.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

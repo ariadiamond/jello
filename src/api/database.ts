@@ -1,16 +1,14 @@
-// @ts-ignore
 import { DatabaseSync } from 'node:sqlite';
+import { existsSync } from 'node:fs';
 
-declare class DatabaseSync_t {
-  constructor(filePath: string);
-  prepare: (sql: string) => {
-    run: (...args: any[]) => void;
-    get: (...args: any[]) => Record<string, number | string | null>;
-    all: (...args: any[]) => Record<string, number | string |null>[];
-  };
+const databaseLocation = process.env.DATABASE_LOCATION;
 
+if (!existsSync(databaseLocation)) {
+  throw new Error(`Database: ${databaseLocation} does not exist`);
+} else if (process.env.NODE_ENV !== 'production') {
+  console.log('Using Database:', databaseLocation);
+  console.debug('Database exists, not going to reinit');
 }
-
-const database: DatabaseSync_t = new DatabaseSync('./job_applications.sqlite3');
+const database = new DatabaseSync(databaseLocation);
 
 export default database;
