@@ -1,16 +1,16 @@
-import Link from 'next/link';
-import { use, Suspense } from 'react';
-import { JobApplication, Company, STATUSES } from '@/api/Models';
+import Link from "next/link";
+import { use, Suspense } from "react";
+import { JobApplication, Company, STATUSES } from "@/api/Models";
 
 type CompaniesPage_t = {
   params: Promise<{ id: string }>;
-}
+};
 
 async function Applications(props) {
   const { companyId } = props;
   const jobApplications = JobApplication()
-    .select(['id', 'title', 'status'])
-    .where({ left: 'company_id', operator: '=', right: companyId })
+    .select(["id", "title", "status"])
+    .where({ left: "company_id", operator: "=", right: companyId })
     .toSql()
     .all();
 
@@ -28,7 +28,9 @@ async function Applications(props) {
           {jobApplications.map((j) => (
             <tr key={j.id}>
               <td>
-                <Link prefetch={false} href={`/job_application/${j.id}`}>{j.title}</Link>
+                <Link prefetch={false} href={`/job_application/${j.id}`}>
+                  {j.title}
+                </Link>
               </td>
               <td>
                 <span className={`status status-${j.status}`}>
@@ -46,7 +48,7 @@ async function Applications(props) {
 export default function CompaniesPage({ params }: CompaniesPage_t) {
   const parsedParams = use(params);
   const id = parseInt(parsedParams.id, 10);
-  const company = Company().where({ left: 'id', operator: '=', right: id }).toSql().get();
+  const company = Company().where({ left: "id", operator: "=", right: id }).toSql().get();
 
   return (
     <>

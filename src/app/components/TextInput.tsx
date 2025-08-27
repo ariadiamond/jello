@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId } from "react";
 
 type Input_t = {
   formKey: string;
@@ -12,12 +12,9 @@ export default function TextInput(props: Input_t) {
   const id = useId();
   return (
     <div>
-      <label htmlFor={id}>
-        {label}
-      </label>
+      <label htmlFor={id}>{label}</label>
       <br />
       <input id={id} required={!nullable} name={formKey} type={type} />
     </div>
   );
 }
-

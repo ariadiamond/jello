@@ -3,19 +3,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --border-light: #ABCCDF;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --border-light: #abccdf;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a4a;
     --foreground: #ededed;
-    --border-dark: #ACC7DD;
+    --border-dark: #acc7dd;
   }
 }
 
@@ -37,7 +32,7 @@ main {
 }
 
 input {
-  border: 1px solid #6A6A6A;
+  border: 1px solid #6a6a6a;
   border-radius: 2px;
 }
 
@@ -80,8 +75,10 @@ button {
 }
 
 /* Dark mode */
-@media(prefers-color-scheme:dark) {
-  nav, form, button {
+@media (prefers-color-scheme: dark) {
+  nav,
+  form,
+  button {
     border-color: var(--border-dark);
   }
 }
@@ -92,23 +89,23 @@ button {
   padding: 0.25em;
 }
 .status-ap {
-  border-color: #30DF90;
+  border-color: #30df90;
 }
 .status-i1 {
-  border-color: #6090FC;
+  border-color: #6090fc;
 }
 .status-i2 {
-  border-color: #AB20FC;
+  border-color: #ab20fc;
 }
 .status-i3 {
-  border-color: #FB30FC;
+  border-color: #fb30fc;
 }
 .status-i4 {
-  border-color: #80DDAB;
+  border-color: #80ddab;
 }
 .status-wa {
-  border-color: #FC9060;
+  border-color: #fc9060;
 }
 .status-re {
-  border-color: #E23080;
+  border-color: #e23080;
 }

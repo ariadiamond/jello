@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import type { PropsWithChildren } from 'react';
+import Link from "next/link";
+import type { PropsWithChildren } from "react";
 
 export default function JobApplicationLayout({ children }: PropsWithChildren) {
   return (
@@ -13,9 +13,7 @@ export default function JobApplicationLayout({ children }: PropsWithChildren) {
         </Link>
       </nav>
       <main>
-        <div>
-          {children}
-        </div>
+        <div>{children}</div>
       </main>
     </>
   );

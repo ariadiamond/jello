@@ -1,6 +1,6 @@
-import Link from 'next/link';
-import { Company } from '@/api/Models';
-import CardGroup from '@/app/components/Card';
+import Link from "next/link";
+import { Company } from "@/api/Models";
+import CardGroup from "@/app/components/Card";
 
 export default function CompaniesPage() {
   const companies = Company().toSql().all();
@@ -9,12 +9,14 @@ export default function CompaniesPage() {
     <>
       <div className="flex justify-between items-center border-b mb-[1em]">
         <h1>Companies</h1>
-        <Link prefetch={false} href="/company/create">Create</Link>
+        <Link prefetch={false} href="/company/create">
+          Create
+        </Link>
       </div>
       <CardGroup
         cards={companies.map((company) => ({
           header: company.name,
-          link: `/company/${company.id}`
+          link: `/company/${company.id}`,
         }))}
       />
     </>

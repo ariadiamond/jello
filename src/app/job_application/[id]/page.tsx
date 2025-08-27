@@ -1,62 +1,65 @@
-import Link from 'next/link';
-import { use } from 'react';
-import { JobApplication, JobApplicationStatusUpdate, Company, STATUSES } from '@/api/Models';
-import Select from '@/app/components/Select';
-import TextInput from '@/app/components/TextInput';
-import Status from './Status';
+import Link from "next/link";
+import { use } from "react";
+import { JobApplication, JobApplicationStatusUpdate, Company, STATUSES } from "@/api/Models";
+import Select from "@/app/components/Select";
+import TextInput from "@/app/components/TextInput";
+import Status from "./Status";
 
 type JobApplicationPage_t = {
-  params: Promise<{ id: string}>
+  params: Promise<{ id: string }>;
 };
 
-export default function JobApplicationPage({ params }) {
+export default function JobApplicationPage({ params }: JobApplicationPage_t) {
   const awaitedParams = use(params);
   const id = parseInt(awaitedParams.id, 10);
-  const jobApplication = JobApplication().where({ left: 'id', operator: '=', right: id }).toSql().get();
-  const company = Company().where({ left: 'id', operator: '=', right: jobApplication.company_id }).toSql().get();
+  const jobApplication = JobApplication()
+    .where({ left: "id", operator: "=", right: id })
+    .toSql()
+    .get();
+  const company = Company()
+    .where({ left: "id", operator: "=", right: jobApplication.company_id })
+    .toSql()
+    .get();
 
   return (
     <>
       <h1>{jobApplication.title}</h1>
-      <Link prefetch={false} href={`/company/${company.id}`}>{company.name} Page</Link>
+      <Link prefetch={false} href={`/company/${company.id}`}>
+        {company.name} Page
+      </Link>
       <div className="flex h-max my-[0.25em]">
-        <h3>
-          Status:&nbsp;
-        </h3>
+        <h3>Status:&nbsp;</h3>
         <span className={`text-sm status status-${jobApplication.status}`}>
           {STATUSES.find((st) => st.id === jobApplication.status)?.label}
         </span>
       </div>
-      <Status
-        StatusHistory={<StatusHistory id={id} />}
-        StatusUpdate={<StatusUpdate id={id} />}
-      />
+      <Status StatusHistory={<StatusHistory id={id} />} StatusUpdate={<StatusUpdate id={id} />} />
     </>
   );
 }
 
 async function StatusUpdate(props: { id: number }) {
-  'use server';
+  "use server";
   const { id } = props;
   async function onUpdateStatus(formState: FormData) {
-    'use server';
-    const offset = (new Date()).getTimezoneOffset();
+    "use server";
+    const offset = new Date().getTimezoneOffset();
 
-    const newStatus = formState.get('new_status');
+    const newStatus = formState.get("new_status");
     if (!STATUSES.map((s) => s.id).includes(newStatus)) {
       throw new Error(`Unkown Status update: ${newStatus} is not known`);
     }
     JobApplication().update({
       id,
-      status: newStatus
+      status: newStatus,
     });
     JobApplicationStatusUpdate().create({
       job_application_id: id,
       status: newStatus,
-      created_at: `${
-        formState.get('created_at').toString()
-      }${offset > 0 ? '+' : '-'}${offset < 600 ? '0' : ''}${offset / 60}:00`,
-      notes: formState.get('notes'),
+      created_at: `${formState
+        .get("created_at")
+        .toString()}${offset > 0 ? "+" : "-"}${offset < 600 ? "0" : ""}${offset / 60}:00`,
+      notes: formState.get("notes"),
     });
   }
 
@@ -75,9 +78,12 @@ async function StatusUpdate(props: { id: number }) {
 }
 
 async function StatusHistory(props: { id: number }) {
-  'use server';
+  "use server";
   const { id } = props;
-  const statusUpdates = JobApplicationStatusUpdate().where({ left: 'job_application_id', operator: '=', right: id }).toSql().all();
+  const statusUpdates = JobApplicationStatusUpdate()
+    .where({ left: "job_application_id", operator: "=", right: id })
+    .toSql()
+    .all();
   return (
     <div>
       {statusUpdates.map((status) => (
