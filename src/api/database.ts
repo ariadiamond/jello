@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 
 const databaseLocation = process.env.DATABASE_LOCATION;
 
-if (!existsSync(databaseLocation)) {
+if (!databaseLocation || !existsSync(databaseLocation)) {
   throw new Error(`Database: ${databaseLocation} does not exist`);
 } else if (process.env.NODE_ENV !== "production") {
   console.log("Using Database:", databaseLocation);

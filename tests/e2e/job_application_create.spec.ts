@@ -48,7 +48,7 @@ test.describe("Job Application Creation", () => {
       )
       .get(jobTitle, companyId);
     await expect(page).toHaveURL(
-      `http://localhost:${process.env.PORT}/job_application/${record.id}`,
+      `http://localhost:${process.env.PORT}/job_application/${record?.id}`,
     );
   });
 });

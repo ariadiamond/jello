@@ -1,4 +1,4 @@
-name: Biome
+name: Typescript
 on:
   push:
     branches: [ main ]
@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 jobs:
-  lint:
+  warnings:
     timeout-minutes: 2
     runs-on: ubuntu-latest
     steps:
@@ -18,5 +18,5 @@ jobs:
         cache: 'npm'
     - name: Install dependencies
       run: npm ci
-    - name: Run Lint Check
-      run: npx biome ci --reporter=github
+    - name: Check Typescript Warnings
+      run: npx tsc --noEmit --jsx preserve

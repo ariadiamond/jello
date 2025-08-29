@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Company } from "@/api/Models";
+import type { Company_t } from "@/api/types";
 import CardGroup from "@/app/components/Card";
 
 export default function CompaniesPage() {
-  const companies = Company().toSql().all();
+  const companies = Company().all();
 
   return (
     <>
@@ -14,7 +15,7 @@ export default function CompaniesPage() {
         </Link>
       </div>
       <CardGroup
-        cards={companies.map((company) => ({
+        cards={companies.map((company: Company_t) => ({
           header: company.name,
           link: `/company/${company.id}`,
         }))}

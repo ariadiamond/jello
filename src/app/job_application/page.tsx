@@ -3,7 +3,7 @@ import { JobApplication, STATUSES } from "@/api/Models";
 import CardGroup from "@/app/components/Card";
 
 export default function JobApplications() {
-  const jobs = JobApplication().toSql().all();
+  const jobs = JobApplication().all();
 
   const cards = jobs.map((j) => ({
     header: j.title,

@@ -1,5 +1,5 @@
 import factoryBuild from "./factoryBuild";
-import { type Statuses_t, ZodTypes } from "./types";
+import { type Status_t, ZodTypes } from "./types";
 
 export const Company = () => factoryBuild({ type: ZodTypes.Company_zt, baseTable: "companies" });
 export const JobApplication = () =>
@@ -10,7 +10,7 @@ export const JobApplicationStatusUpdate = () =>
     baseTable: "job_application_status_junctions",
   });
 
-export const STATUSES: { id: Statuses_t; label: string }[] = [
+export const STATUSES: Status_t[] = [
   { id: "ap", label: "Applied" },
   { id: "i1", label: "Interview with Recruiter" },
   { id: "i2", label: "Coding Interview" },

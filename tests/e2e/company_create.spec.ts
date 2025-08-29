@@ -43,7 +43,7 @@ test.describe("Create Company", () => {
       .prepare("SELECT name, url FROM companies WHERE id = ?")
       .get(parseInt(page.url().match(/([0-9]+)$/)?.[1] || "", 10));
 
-    expect(record.name).toEqual(companyId);
-    expect(record.url).toEqual(`https://${companyId}.com`);
+    expect(record?.name).toEqual(companyId);
+    expect(record?.url).toEqual(`https://${companyId}.com`);
   });
 });
