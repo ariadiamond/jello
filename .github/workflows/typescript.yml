@@ -1,9 +1,9 @@
 name: Typescript
 on:
   push:
-    branches: [ daddy ]
+    branches: [ main ]
   pull_request:
-    branches: [ daddy ]
+    branches: [ main ]
 permissions:
   contents: read
 jobs:
