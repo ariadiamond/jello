@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { use } from "react";
 import { JobApplication, JobApplicationStatusUpdate, Company, STATUSES } from "@/api/Models";
+import { ZodTypes } from "@/api/types";
 import Select from "@/app/components/Select";
 import TextInput from "@/app/components/TextInput";
 import Status from "./Status";
@@ -12,14 +14,16 @@ type JobApplicationPage_t = {
 export default function JobApplicationPage({ params }: JobApplicationPage_t) {
   const awaitedParams = use(params);
   const id = parseInt(awaitedParams.id, 10);
-  const jobApplication = JobApplication()
-    .where({ left: "id", operator: "=", right: id })
-    .toSql()
-    .get();
+  const jobApplication = JobApplication().where({ left: "id", operator: "=", right: id }).get();
+  if (!jobApplication) notFound();
+
   const company = Company()
     .where({ left: "id", operator: "=", right: jobApplication.company_id })
-    .toSql()
     .get();
+
+  // This shouldn't be possible, as the model states that all job applications should have a company
+  // but we include it here for TS completeness
+  if (!company) notFound();
 
   return (
     <>
@@ -43,24 +47,18 @@ async function StatusUpdate(props: { id: number }) {
   const { id } = props;
   async function onUpdateStatus(formState: FormData) {
     "use server";
-    const offset = new Date().getTimezoneOffset();
-
-    const newStatus = formState.get("new_status");
-    if (!STATUSES.map((s) => s.id).includes(newStatus)) {
-      throw new Error(`Unkown Status update: ${newStatus} is not known`);
-    }
+    const newStatus = ZodTypes.Statuses_zt.parse(formState.get("new_status"));
+    const data = ZodTypes.JobApplicationStatusUpdate_zt.omit({ id: true }).parse({
+      job_application_id: id,
+      status: newStatus,
+      created_at: formState.get("created_at"),
+      notes: formState.get("notes"),
+    });
     JobApplication().update({
       id,
       status: newStatus,
     });
-    JobApplicationStatusUpdate().create({
-      job_application_id: id,
-      status: newStatus,
-      created_at: `${formState
-        .get("created_at")
-        .toString()}${offset > 0 ? "+" : "-"}${offset < 600 ? "0" : ""}${offset / 60}:00`,
-      notes: formState.get("notes"),
-    });
+    JobApplicationStatusUpdate().create(data);
   }
 
   return (
@@ -82,7 +80,6 @@ async function StatusHistory(props: { id: number }) {
   const { id } = props;
   const statusUpdates = JobApplicationStatusUpdate()
     .where({ left: "job_application_id", operator: "=", right: id })
-    .toSql()
     .all();
   return (
     <div>

@@ -1,17 +1,14 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { use, Suspense } from "react";
 import { JobApplication, Company, STATUSES } from "@/api/Models";
+import type { JobApplication_t } from "@/api/types";
 
-type CompaniesPage_t = {
-  params: Promise<{ id: string }>;
-};
-
-async function Applications(props) {
+async function Applications(props: { companyId: number }) {
   const { companyId } = props;
   const jobApplications = JobApplication()
     .select(["id", "title", "status"])
     .where({ left: "company_id", operator: "=", right: companyId })
-    .toSql()
     .all();
 
   return (
@@ -25,7 +22,7 @@ async function Applications(props) {
           </tr>
         </thead>
         <tbody>
-          {jobApplications.map((j) => (
+          {jobApplications.map((j: JobApplication_t) => (
             <tr key={j.id}>
               <td>
                 <Link prefetch={false} href={`/job_application/${j.id}`}>
@@ -45,10 +42,18 @@ async function Applications(props) {
   );
 }
 
+type CompaniesPage_t = {
+  params: Promise<{ id: string }>;
+};
+
 export default function CompaniesPage({ params }: CompaniesPage_t) {
   const parsedParams = use(params);
   const id = parseInt(parsedParams.id, 10);
-  const company = Company().where({ left: "id", operator: "=", right: id }).toSql().get();
+  const company = Company().where({ left: "id", operator: "=", right: id }).get();
+
+  if (!company) {
+    notFound();
+  }
 
   return (
     <>

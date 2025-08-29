@@ -1,14 +1,13 @@
-import type { DatabaseSync } from "@types/node";
 import * as z from "zod";
 import database from "./database";
 
-const BaseSchemaValue = z.looseObject({ type: z.string(), id: z.number() });
-type BaseSchema = z.infer<typeof BaseSchemaValue>;
+const BaseSchemaValue = z.object({ id: z.number() });
+type BaseSchema_zt = typeof BaseSchemaValue;
 
 const UnaryOperators_zt = z.enum(["IS NULL", "IS NOT NULL"]);
 const BinaryOperators_zt = z.enum(["=", "!=", "<>", ">", "<", ">=", "<=", "LIKE", "ILIKE"]);
 
-type Model<T extends BaseSchema> = {
+type Model<T extends BaseSchema_zt> = {
   type: T;
   data: {
     select: string[];
@@ -23,15 +22,16 @@ type Model<T extends BaseSchema> = {
   select: (params: Model<T>["data"]["select"]) => Model<T>;
   where: (params: Model<T>["data"]["where"][number]) => Model<T>;
   limit: (params: Model<T>["data"]["limit"]) => Model<T>;
-  toSql: () => ReturnType<DatabaseSync["prepare"]>;
-  create: (params: Exclude<T, "id" | "type">) => { id: number };
-  update: (params: T & { id: number }) => void;
+  get: () => z.infer<T> | undefined;
+  all: () => z.infer<T>[];
+  create: (params: Partial<Exclude<z.infer<T>, "id">>) => { id: number };
+  update: (params: Partial<z.infer<T>> & { id: number }) => void;
 };
 
 // TODO: Before going to production + if this scales at all, this needs to be strengthened a lot
 const escapeString = (str: string): string => `'${str.replace(/\\/g, "").replace(/'/g, "'")}'`;
 
-function parseSelect<T extends BaseSchema>(model: Model<T>) {
+function parseSelect<T extends BaseSchema_zt>(model: Model<T>) {
   const schemaKeys = Object.keys(model.type.keyof().enum);
   const parsed = model.data.select.map((s) => {
     const re = new RegExp(`^${s}$`, "i");
@@ -47,11 +47,11 @@ function parseSelect<T extends BaseSchema>(model: Model<T>) {
   return `SELECT ${parsed.join(", ")}`;
 }
 
-function parseFrom<T extends BaseSchema>(model: Model<T>) {
+function parseFrom<T extends BaseSchema_zt>(model: Model<T>) {
   return `FROM ${model.data.baseTable}`;
 }
 
-function parseExprOrLiteral<T extends BaseSchema>(
+function parseExprOrLiteral<T extends BaseSchema_zt>(
   model: Model<T>,
   // biome-ignore lint/suspicious/noExplicitAny: This parses from an unspecified value, so the result is narrowly typed
   value: any,
@@ -77,11 +77,11 @@ function parseExprOrLiteral<T extends BaseSchema>(
 function parseOperator(
   // biome-ignore lint/suspicious/noExplicitAny: This parses from an unspecified value, so the result is narrowly typed
   operator: any,
-): Model<BaseSchema>["data"]["where"][number]["operator"] | never {
+): Model<BaseSchema_zt>["data"]["where"][number]["operator"] | never {
   return z.union([BinaryOperators_zt, UnaryOperators_zt]).parse(operator);
 }
 
-function parseWhere<T extends BaseSchema>(model: Model<T>) {
+function parseWhere<T extends BaseSchema_zt>(model: Model<T>) {
   const whereClauses = model.data.where.map((clause) => {
     const left = parseExprOrLiteral(model, clause.left);
     const operator = parseOperator(clause.operator);
@@ -103,26 +103,15 @@ function parseLimit(limit: number | null) {
   return `LIMIT ${limit}`;
 }
 
-function toSql<T extends BaseSchema>(this: Model<T>) {
-  const query = `
-    ${parseSelect(this)}
-    ${parseFrom(this)}
-    ${parseWhere(this)}
-    ${parseLimit(this.data.limit)}
-  `;
-  console.info("[QUERY]", query);
-  return database.prepare(query);
-}
-
 /* My attempt to do class like work, without using classes because JavaScript is a functional
  * language :)
  */
-type FactoryBuildArg<T extends BaseSchema> = {
+type FactoryBuildArg<T extends BaseSchema_zt> = {
   type: T;
   baseTable: string;
 };
 
-function factoryBuild<T extends BaseSchema>(init: FactoryBuildArg<T>) {
+function factoryBuild<T extends BaseSchema_zt>(init: FactoryBuildArg<T>) {
   const model: Model<T> = {
     type: init.type,
     data: {
@@ -143,11 +132,66 @@ function factoryBuild<T extends BaseSchema>(init: FactoryBuildArg<T>) {
       this.data.limit = params;
       return this;
     },
-    toSql: function () {
-      return toSql.bind(this)();
+    get: function (this: Model<T>): z.infer<T> | undefined {
+      const query = `
+        ${parseSelect(this)}
+        ${parseFrom(this)}
+        ${parseWhere(this)}
+        ${parseLimit(this.data.limit)}
+      `.trim();
+      const parser = this.data.select.length
+        ? this.type.pick(
+            this.data.select.reduce(
+              (acc, key) => {
+                acc[key as keyof z.infer<T>] = true;
+                return acc;
+              },
+              {} as Record<keyof z.infer<T>, true>,
+            ),
+          )
+        : this.type;
+      if (process.env.NODE_ENV === "development") {
+        console.time(`[QUERY - one] ${query}`);
+      }
+      const data = database.prepare(query).get();
+      if (process.env.NODE_ENV === "development") {
+        console.timeEnd(`[QUERY - one] ${query}`);
+      }
+      if (!data) return;
+      // @ts-expect-error TODO: this can be a partial, but currently, TS sees this as Record<string, never>
+      return parser.parse(data);
     },
-    create: function (this: Model<T>, params: Partial<Exclude<T, "id" | "type">>) {
-      const schema = this.type.omit({ id: true, type: true }).parse(params);
+    all: function (this: Model<T>): z.infer<T>[] {
+      const query = `
+        ${parseSelect(this)}
+        ${parseFrom(this)}
+        ${parseWhere(this)}
+        ${parseLimit(this.data.limit)}
+      `.trim();
+
+      const parser = this.data.select.length
+        ? this.type.pick(
+            this.data.select.reduce(
+              (acc, key) => {
+                acc[key as keyof z.infer<T>] = true;
+                return acc;
+              },
+              {} as Record<keyof z.infer<T>, true>,
+            ),
+          )
+        : this.type;
+      if (process.env.NODE_ENV === "development") {
+        console.time(`[QUERY - many] ${query}`);
+      }
+      const data = database.prepare(query).all();
+      if (process.env.NODE_ENV === "development") {
+        console.timeEnd(`[QUERY - many] ${query}`);
+      }
+      // @ts-expect-error TODO: TS parses this as Record<string, never>
+      return parser.array().parse(data);
+    },
+    create: function (this: Model<T>, params: Partial<Exclude<z.infer<T>, "id">>) {
+      const schema = this.type.omit({ id: true }).parse(params);
 
       const keysToCreate = Object.keys(schema).filter((key) => schema[key]);
       if (keysToCreate.length === 0) {
@@ -159,16 +203,16 @@ function factoryBuild<T extends BaseSchema>(init: FactoryBuildArg<T>) {
         RETURNING id
       `;
       console.info("[CREATE]", query);
-      return database.prepare(query).get();
+      return this.type.pick({ id: true }).parse(database.prepare(query).get());
     },
-    update: function (this: Model<T>, params: Partial<T> & { id: T["id"] }) {
+    update: function (this: Model<T>, params: Partial<z.infer<T>> & { id: number }) {
       const schema = z
-        .intersection(this.type.partial(), this.type.pick({ id: true }))
+        .intersection(this.type.partial().omit({ id: true }), this.type.pick({ id: true }))
         .parse(params);
 
       const keysToUpdate = Object.keys(schema)
-        .filter((key) => !["type", "id"].includes(key))
-        .filter((key) => schema[key]);
+        .filter((key) => key !== "id")
+        .filter((key) => key in schema);
       if (keysToUpdate.length < 1) {
         throw new Error("No attributes where passed!");
       }
@@ -176,9 +220,9 @@ function factoryBuild<T extends BaseSchema>(init: FactoryBuildArg<T>) {
         UPDATE ${this.data.baseTable}
         SET ${keysToUpdate.map((key) => `${key} = ${parseExprOrLiteral(this, schema[key])}`).join(", ")}
         WHERE id = ${parseExprOrLiteral(this, schema.id)}
-      `;
+      `.trim();
       console.info("[UPDATE]", query);
-      return database.prepare(query).run();
+      database.prepare(query).run();
     },
   };
 

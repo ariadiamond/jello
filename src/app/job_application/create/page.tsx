@@ -1,24 +1,26 @@
 import { redirect } from "next/navigation";
+import { string as zString } from "zod";
 import { JobApplication, Company, STATUSES } from "@/api/Models";
+import { ZodTypes } from "@/api/types";
 import Select from "@/app/components/Select";
 import TextInput from "@/app/components/TextInput";
 
 export default function CreateJobApplication() {
   const onSubmit = async (formState: FormData) => {
     "use server";
-    const offset = new Date().getTimezoneOffset();
-    const { id } = JobApplication().create({
+
+    const data = ZodTypes.JobApplication_zt.omit({ id: true }).parse({
       title: formState.get("title"),
-      company_id: parseInt(formState.get("company_id"), 10),
+      company_id: parseInt(zString().parse(formState.get("company_id")), 10),
       status: formState.get("status"),
-      applied_on: `${formState
-        .get("applied_on")
-        .toString()}${offset > 0 ? "+" : "-"}${offset < 600 ? "0" : ""}${offset / 60}:00`,
+      applied_on: formState.get("applied_on"),
+      notes: formState.get("notes"),
     });
+    const { id } = JobApplication().create(data);
     redirect(`/job_application/${id}`);
   };
 
-  const companies = Company().select(["id", "name"]).toSql().all();
+  const companies = Company().select(["id", "name"]).all();
 
   return (
     <>
